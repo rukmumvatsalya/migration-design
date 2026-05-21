@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PAYG — Upgrade Transition Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200" rel="stylesheet" />
+<style>
+  :root{
+    --ff:"Noto Sans","Noto Sans Devanagari",sans-serif;
+    --magenta:#D9008D; --magenta-pressed:#B5007A; --magenta-tint:#FFE5F6; --magenta-soft:#FFCCED;
+    --green:#008043; --green-tint:#E1FAED;
+    --ink:#161021; --ink-2:#5C5468; --ink-3:#A7A1B2;
+    --bg:#FAF9FC; --line:#E8E4F0;
+    --chat-bg-pri:#FFFFFF; --chat-bg-sec:#F5F6F7;
+    --chat-bubble-bot:#EBEDF0; --chat-divider:#DCDEE0;
+    --icon-action:#352D42; --icon-nonAction:#898296;
+    --r-large:16px; --r-medium:12px; --r-small:8px; --r-xlarge:24px; --r-full:9999px;
+    --sh-lg:0 4px 12px 0 rgba(0,0,0,.15);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:var(--ff);background:#15151b;color:#E7E7EC;-webkit-font-smoothing:antialiased;
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 20px 70px}
+
+  /* Material Symbols Rounded */
+  .ms{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;
+    line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;
+    word-wrap:normal;direction:ltr;-webkit-font-feature-settings:'liga';-webkit-font-smoothing:antialiased;
+    user-select:none;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
+  .ms.outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+  .ms.ms-16{font-size:16px;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 20}
+  .ms.ms-20{font-size:20px;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 20}
+
+  .pagehead{text-align:center;margin-bottom:6px}
+  .pagehead h1{font-size:19px;font-weight:700;letter-spacing:-.01em}
+  .pagehead p{color:#8C8C9E;font-size:12.5px;margin-top:5px;max-width:620px}
+  .controls{display:flex;gap:9px;align-items:center;margin:15px 0 18px;flex-wrap:wrap;justify-content:center}
+  .ctl{background:#26262f;color:#E7E7EC;border:1px solid #34343f;border-radius:8px;
+    padding:8px 14px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit}
+  .ctl:hover{background:#32323d}
+  .ctl:disabled{opacity:.4;cursor:default}
+  .stepchip{font-size:12px;color:#15151b;background:#E7E7EC;border-radius:20px;
+    padding:6px 14px;font-weight:600;min-width:170px;text-align:center}
+  .hinttext{color:#5f5f70;font-size:12px;margin-top:14px;text-align:center}
+
+  .device{width:384px;height:784px;background:#0c0c10;border-radius:42px;padding:12px;
+    box-shadow:0 30px 70px -20px rgba(0,0,0,.8),0 0 0 1px #2a2a33}
+  .viewport{position:relative;width:360px;height:760px;border-radius:31px;overflow:hidden;background:#000}
+  .screen{position:absolute;inset:0;display:none}
+  .screen.on{display:block;animation:scrIn .34s cubic-bezier(.3,.7,.3,1)}
+  @keyframes scrIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+  .pane{position:absolute;inset:0;display:flex;flex-direction:column}
+
+  .statusbar{flex:0 0 auto;height:28px;padding:0 16px;display:flex;align-items:center;
+    justify-content:space-between;font-size:12px;font-weight:600;color:var(--ink)}
+  .statusbar .right{display:flex;gap:5px;align-items:center;opacity:.9}
+  .statusbar .right .ms{font-size:15px}
+
+  /* ============ INDEX ============ */
+  .idx{height:100%;display:flex;flex-direction:column;padding:0 24px;
+    background:radial-gradient(132% 40% at 50% 0%,#FCE3F1 0%,var(--bg) 55%)}
+  .idx-brand{font-size:13px;font-weight:700;color:var(--magenta);letter-spacing:.05em;
+    text-align:center;margin-top:32px}
+  .idx h1{font-size:20px;font-weight:700;color:var(--ink);text-align:center;margin-top:9px;
+    letter-spacing:-.01em;line-height:1.35;padding:0 6px}
+  .idx-sub{font-size:13px;color:var(--ink-2);text-align:center;margin-top:7px}
+  .idx-cards{display:flex;flex-direction:column;gap:12px;margin-top:24px}
+  .vcard{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:15px;cursor:pointer;
+    display:flex;gap:13px;align-items:center;box-shadow:0 6px 16px -11px rgba(0,0,0,.3)}
+  .vcard:active{border-color:var(--magenta);background:#FFF7FC}
+  .vcard-badge{width:44px;height:44px;border-radius:13px;background:var(--magenta-tint);
+    color:var(--magenta);font-weight:800;font-size:20px;display:flex;align-items:center;
+    justify-content:center;flex:0 0 auto}
+  .vcard-tx{flex:1;min-width:0}
+  .vcard-tx .t{font-size:14.5px;font-weight:700;color:var(--ink)}
+  .vcard-tx .d{font-size:11.5px;color:var(--ink-2);margin-top:3px;line-height:1.45}
+  .vcard>.ms{color:var(--ink-3)}
+  .idx-foot{margin-top:auto;padding:20px 4px;text-align:center;font-size:11.5px;
+    color:var(--ink-3);line-height:1.55}
+
+  /* ============ CHAT (reference design) ============ */
+  .chat{background:var(--chat-bg-sec)}
+  .chat .statusbar{background:var(--chat-bg-pri)}
+  .chat-top-bar{flex:0 0 auto;background:var(--chat-bg-pri);border-bottom:1px solid var(--line);
+    padding:8px 4px 8px 12px;display:flex;gap:4px;align-items:center}
+  .chat-top-bar-left{flex:1;min-width:0;display:flex;align-items:center;gap:8px;height:48px}
+  .wiom-avatar{width:48px;height:48px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+  .wiom-avatar svg{width:100%;height:100%;display:block}
+  .chat-top-text{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .chat-top-name{font-weight:500;font-size:14px;line-height:20px;color:var(--ink)}
+  .chat-top-status{font-weight:400;font-size:10px;line-height:14px;color:var(--ink-2)}
+  .chat-icon-btn{width:48px;height:48px;background:transparent;border:0;display:flex;
+    align-items:center;justify-content:center;border-radius:var(--r-large);
+    color:var(--icon-action);flex:0 0 auto;cursor:pointer}
+  .chat-icon-btn:hover{background:var(--chat-bg-sec)}
+  .sticky-net{flex:0 0 auto;background:var(--chat-bg-pri);padding:12px 16px;display:flex;justify-content:center}
+  .net-card{width:100%;background:var(--bg);border-radius:var(--r-large);box-shadow:var(--sh-lg);
+    padding:12px;display:flex;gap:12px;align-items:center}
+  .net-card-icon{width:24px;height:24px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+  .net-card-icon .ms{font-size:24px;color:var(--icon-nonAction)}
+  .net-card-text{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
+  .net-card-heading{font-size:12px;line-height:16px;color:var(--ink-2)}
+  .net-card-status{display:flex;gap:4px;align-items:baseline}
+  .net-card-status-label{font-size:12px;line-height:16px;color:var(--ink-2)}
+  .net-card-status-value{font-size:16px;line-height:24px;font-weight:600;color:var(--ink)}
+  .chat-body{flex:1 1 auto;overflow-y:auto;background:var(--chat-bg-sec);
+    padding:16px 12px 12px;display:flex;flex-direction:column;gap:12px;scrollbar-width:none}
+  .chat-body::-webkit-scrollbar{display:none}
+  .msg-row{display:flex;width:100%;animation:fadeUp 240ms ease-out}
+  .msg-row.bot{padding-left:12px;padding-right:60px}
+  .msg-row.hide{display:none}
+  .msg-wrap{position:relative;max-width:280px;display:flex;flex-direction:column}
+  .msg-tail{position:absolute;top:0;left:-12px;width:12px;height:12px;
+    background:var(--chat-bubble-bot);clip-path:polygon(100% 0%,100% 100%,0% 0%)}
+  .msg-bubble{background:var(--chat-bubble-bot);padding:4px;display:flex;flex-direction:column;gap:4px;
+    border-radius:0 var(--r-medium) var(--r-medium) var(--r-medium)}
+  .msg-bubble.has-cta-below{border-radius:0 var(--r-medium) 0 0}
+  .msg-content{padding:8px;display:flex;flex-direction:column;gap:4px;width:100%;align-items:flex-start}
+  .msg-text{font-size:14px;line-height:20px;font-weight:400;color:var(--ink);max-width:228px}
+  .msg-text strong{font-weight:700}
+  .msg-time{font-size:10px;line-height:1.2;color:var(--ink-3);align-self:flex-end}
+  .msg-divider{height:1px;background:var(--chat-divider);width:100%}
+  .msg-cta{background:var(--chat-bubble-bot);border:0;width:100%;padding:12px 8px;display:flex;
+    align-items:center;justify-content:center;border-radius:0 0 var(--r-medium) var(--r-medium);cursor:pointer}
+  .msg-cta-text{font-size:14px;line-height:20px;font-weight:500;color:var(--magenta);text-align:center}
+  .msg-cta:active{background:#E2E4E8}
+  .waiting-bubble{padding:12px;display:flex;align-items:center;gap:8px;background:var(--chat-bubble-bot);
+    border-radius:0 var(--r-medium) var(--r-medium) var(--r-medium);align-self:flex-start}
+  .waiting-dots{width:36px;height:20px;display:flex;align-items:center;justify-content:center;gap:4px}
+  .waiting-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-3);
+    animation:dotPulse 1.2s ease-in-out infinite}
+  .waiting-dot:nth-child(2){animation-delay:.15s}.waiting-dot:nth-child(3){animation-delay:.3s}
+  @keyframes dotPulse{0%,60%,100%{opacity:.35;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .chat-input{flex:0 0 auto;background:var(--chat-bg-pri);padding:12px;display:flex;gap:8px;align-items:flex-end}
+  .input-field{flex:1;background:var(--chat-bg-pri);border:1px solid var(--line);
+    border-radius:var(--r-xlarge);padding:12px 16px;min-height:48px;display:flex;align-items:center;
+    font-size:16px;line-height:24px;color:var(--ink-3)}
+  .send-btn{width:48px;height:48px;border-radius:var(--r-xlarge);background:var(--ink-3);border:0;
+    display:flex;align-items:center;justify-content:center;color:#fff;flex:0 0 auto}
+  .send-btn .ms{color:#fff}
+
+  /* ============ transition panes ============ */
+  .upg{background:radial-gradient(132% 42% at 50% 0%,#FCE3F1 0%,var(--bg) 56%)}
+  .upg .statusbar{background:transparent}
+  .prog{display:flex;gap:6px;padding:8px 26px 0}
+  .prog .seg{height:3.5px;border-radius:2px;background:#E3E1E8;flex:1}
+  .prog .seg.on{background:var(--magenta)}
+  .content{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 30px}
+  .brand{font-size:12px;font-weight:700;color:var(--magenta);letter-spacing:.05em;margin-top:22px}
+  .content h1{font-size:23px;font-weight:700;color:var(--ink);line-height:1.38;
+    margin-top:12px;letter-spacing:-.015em}
+  .content .sub{font-size:13.5px;color:var(--ink-2);margin-top:10px;line-height:1.5}
+  .microline{font-size:12.5px;color:var(--ink-3);margin-top:auto;padding-bottom:6px}
+  .ctabar{padding:16px}
+  .cta{display:block;width:100%;background:var(--magenta);color:#fff;border:0;font-family:inherit;
+    font-weight:700;font-size:15.5px;border-radius:14px;padding:16px;cursor:pointer;text-align:center}
+  .cta:active{transform:scale(.99);background:var(--magenta-pressed)}
+  .cta.disabled{background:#E2E0E8;cursor:default}
+  .cta.hint{animation:hint 1.9s infinite}
+  @keyframes hint{0%,100%{box-shadow:0 0 0 0 rgba(217,0,141,0)}50%{box-shadow:0 0 0 7px rgba(217,0,141,.16)}}
+
+  .upviz{position:relative;width:166px;height:166px;margin-top:30px;display:flex;align-items:center;justify-content:center}
+  .upring{position:absolute;inset:0}
+  .ring-track{fill:none;stroke:#F0DCEA;stroke-width:7}
+  .ring-arc{fill:none;stroke:var(--magenta);stroke-width:7;stroke-linecap:round;
+    transform:rotate(-90deg);transform-origin:83px 83px}
+  #scr-upgrade.on .upring{animation:spin 7s linear infinite}
+  #scr-upgrade.on .ring-arc{animation:ringFill 2s ease-in-out infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes ringFill{0%{stroke-dashoffset:100}54%{stroke-dashoffset:3}72%{stroke-dashoffset:3}100%{stroke-dashoffset:100}}
+  .up-core{width:92px;height:92px;border-radius:50%;background:var(--magenta-tint);
+    display:flex;align-items:center;justify-content:center;color:var(--magenta)}
+  .up-core .ms{font-size:50px}
+  #scr-upgrade.on .up-core{animation:corePulse 2s ease-in-out infinite}
+  @keyframes corePulse{0%,100%{transform:scale(.93)}54%{transform:scale(1.05)}}
+  .uspark{position:absolute;color:var(--magenta);opacity:0}
+  .uspark .ms{font-size:17px}
+  .uspark.u1{top:2px;left:22px}.uspark.u2{top:14px;right:14px}
+  .uspark.u3{bottom:16px;left:10px}.uspark.u4{bottom:4px;right:26px}
+  #scr-upgrade.on .uspark{animation:uspk 2s ease-in-out infinite}
+  #scr-upgrade.on .u2{animation-delay:.25s}#scr-upgrade.on .u3{animation-delay:.5s}#scr-upgrade.on .u4{animation-delay:.75s}
+  @keyframes uspk{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1.1)}}
+  .updots{display:flex;gap:6px;margin-top:24px}
+  .updots i{width:7px;height:7px;border-radius:50%;background:var(--magenta);display:block;animation:dotPulse 1.3s infinite}
+  .updots i:nth-child(2){animation-delay:.2s}.updots i:nth-child(3){animation-delay:.4s}
+
+  .dscale{position:relative;width:100%;max-width:290px;margin-top:44px}
+  .dscale-track{position:absolute;left:14px;right:14px;top:42px;height:4px;
+    background:var(--magenta-soft);border-radius:3px;transform-origin:left}
+  .dscale-nodes{display:flex;justify-content:space-between;position:relative;z-index:2}
+  .dnode{display:flex;flex-direction:column;align-items:center}
+  .dnum{height:26px;font-size:22px;font-weight:800;color:var(--magenta);line-height:26px}
+  .ddot-wrap{height:24px;margin-top:6px;display:flex;align-items:center;justify-content:center}
+  .ddot{border-radius:50%;background:var(--magenta);
+    box-shadow:0 0 0 4px var(--bg),0 0 0 5.5px var(--magenta-soft)}
+  .ddot.d1{width:10px;height:10px}.ddot.d2{width:12px;height:12px}
+  .ddot.d3{width:14px;height:14px}.ddot.d4{width:16px;height:16px}
+  .ddot.d5{width:20px;height:20px}
+  .dscale-ends{display:flex;justify-content:space-between;margin-top:18px;padding:0 2px}
+  .dscale-ends span{font-size:11.5px;color:var(--ink-3);font-weight:600}
+  #scr-flex.on .dscale-track{animation:trackDraw .55s .1s ease-out backwards}
+  @keyframes trackDraw{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  #scr-flex.on .dnode{animation:nodeIn .45s cubic-bezier(.3,1.5,.4,1) backwards}
+  #scr-flex.on .dnode:nth-child(1){animation-delay:.18s}
+  #scr-flex.on .dnode:nth-child(2){animation-delay:.30s}
+  #scr-flex.on .dnode:nth-child(3){animation-delay:.42s}
+  #scr-flex.on .dnode:nth-child(4){animation-delay:.54s}
+  #scr-flex.on .dnode:nth-child(5){animation-delay:.66s}
+  @keyframes nodeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  #scr-flex.on .microline{animation:fadeUp .5s .95s backwards}
+
+  .gaugewrap{position:relative;width:236px;height:150px;margin-top:36px}
+  .gaugewrap svg{position:absolute;inset:0}
+  .gnum{position:absolute;left:0;right:0;top:56px;text-align:center}
+  .gnum .v{font-size:58px;font-weight:700;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums}
+  .gnum .u{display:block;font-size:12px;color:var(--ink-3);font-weight:600;letter-spacing:.14em;margin-top:7px}
+  .spd-old{margin-top:16px;font-size:13px;color:var(--ink-3)}
+  .spd-old s{font-weight:600}
+  .badge2x{margin-top:14px;background:var(--magenta);color:#fff;font-weight:700;font-size:13px;
+    border-radius:var(--r-full);padding:8px 16px;display:flex;align-items:center;gap:6px;opacity:0}
+  .badge2x .ms{font-size:16px}
+  #scr-speed.on .badge2x{animation:fadeUp .5s 1.9s backwards}
+
+  /* ============ app screens ============ */
+  .appbar{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:10px 8px;
+    background:#fff;border-bottom:1px solid var(--line)}
+  .appbar .ic{width:40px;height:40px;border-radius:var(--r-large);display:flex;align-items:center;
+    justify-content:center;color:var(--icon-action);cursor:pointer;background:transparent;border:0;flex:0 0 auto}
+  .appbar .ic:hover{background:var(--chat-bg-sec)}
+  .appbar .ttl{flex:1;font-size:16px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+  .appbar .rt{display:flex}
+  .scrollarea{flex:1;overflow-y:auto;background:var(--bg);scrollbar-width:none}
+  .scrollarea::-webkit-scrollbar{display:none}
+  .pintro{font-size:12.5px;color:var(--ink-3);padding:14px 18px 2px}
+  .rbar{flex:0 0 auto;padding:14px 16px;background:#fff;border-top:1px solid var(--line)}
+
+  .radio{width:20px;height:20px;border-radius:50%;border:2px solid #C6C4CE;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center}
+  .radio::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--magenta);
+    transform:scale(0);transition:transform .15s}
+  .sel .radio{border-color:var(--magenta)}
+  .sel .radio::after{transform:scale(1)}
+  .pinfo{flex:1;min-width:0}
+  .pinfo .pd{font-size:14.5px;font-weight:700;color:var(--ink)}
+  .pinfo .pd span{font-weight:400;color:var(--ink-3);font-size:12px}
+
+  /* version A — inline strike */
+  .prow{margin:9px 16px;background:#fff;border:1.4px solid var(--line);border-radius:14px;padding:14px;
+    display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s,background .15s}
+  .prow.sel{border-color:var(--magenta);background:#FFF7FC}
+  .pprice{text-align:right;flex:0 0 auto}
+  .pprice .pline s{color:var(--ink-3);font-size:12.5px}
+  .pprice .pline b{color:var(--ink);font-size:16px;font-weight:700;margin-left:3px}
+  .pprice .ptag{display:flex;align-items:center;gap:3px;justify-content:flex-end;
+    color:var(--green);font-size:10.5px;font-weight:600;margin-top:4px}
+  .pprice .ptag .ms{font-size:13px}
+  /* version B — savings banner */
+  .cpn-banner{margin:12px 16px 2px;background:var(--green-tint);border:1px solid #BCE8CE;
+    border-radius:12px;padding:11px 13px;display:flex;gap:9px;align-items:center;
+    color:#0a5c33;font-weight:700;font-size:12.5px}
+  .cpn-banner .ms{color:var(--green);font-size:19px}
+  .bprice{font-size:19px;font-weight:800;color:var(--ink)}
+  .bprice s{font-size:12.5px;color:var(--ink-3);font-weight:600;margin-right:6px}
+  .bsave{margin-top:4px;display:inline-block;background:var(--green-tint);color:var(--green);
+    font-size:10.5px;font-weight:700;border-radius:6px;padding:2px 7px}
+  /* version C — offer card */
+  .cmcard{margin:10px 16px;background:#fff;border:1.4px solid var(--line);border-radius:14px;
+    overflow:hidden;cursor:pointer;transition:border-color .15s}
+  .cmcard.sel{border-color:var(--magenta)}
+  .cmtop{padding:14px;display:flex;align-items:center;gap:12px}
+  .cmprice{text-align:right;flex:0 0 auto}
+  .cmprice s{color:var(--ink-3);font-size:12.5px}
+  .cmprice b{color:var(--ink);font-size:16px;font-weight:700;margin-left:3px}
+  .cmband{background:var(--green-tint);border-top:1px solid #CBE9D7;padding:9px 8px;
+    display:flex;align-items:center;justify-content:center;gap:6px}
+  .cmband .ms{font-size:18px;color:var(--green)}
+  .cmband .ctxt{font-size:12px;font-weight:700;color:#0a5c33}
+
+  /* summary */
+  .sum-card{background:#fff;margin:14px 16px 0;border-radius:16px;border:1px solid var(--line);overflow:hidden}
+  .sum-plan{padding:14px 16px;display:flex;flex-direction:column;gap:3px}
+  .sum-plan .sp1{font-size:15px;font-weight:700;color:var(--ink)}
+  .sum-plan .sp2{font-size:12px;color:var(--ink-2)}
+  .sum-line{padding:12px 16px;display:flex;justify-content:space-between;font-size:13.5px;
+    border-top:1px solid var(--line)}
+  .sum-line .lbl{color:var(--ink-2)}
+  .sum-line .val{font-weight:600;color:var(--ink)}
+  .sum-line .val.disc{color:var(--green)}
+  .sum-line.total .lbl{font-size:15px;font-weight:700;color:var(--ink)}
+  .sum-line.total .val{font-size:19px;font-weight:800}
+  .sum-note{margin:14px 16px 0;background:var(--green-tint);border-radius:12px;padding:12px 14px;
+    display:flex;gap:9px;align-items:center;color:var(--green);font-weight:700;font-size:13px}
+  .sum-note .ms{font-size:20px}
+
+  /* payment */
+  .pay-h{padding:18px 18px 4px;font-size:18px;font-weight:700;color:var(--ink)}
+  .pay-sub{padding:0 18px;font-size:12.5px;color:var(--ink-3)}
+  .pm-row{margin:11px 16px 0;background:#fff;border:1.4px solid var(--line);border-radius:14px;
+    padding:14px;display:flex;gap:13px;align-items:center;cursor:pointer}
+  .pm-row:active{border-color:var(--magenta);background:#FFF7FC}
+  .pm-ic{width:44px;height:44px;border-radius:12px;background:var(--magenta-tint);color:var(--magenta);
+    display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .pm-tx{flex:1;min-width:0}
+  .pm-tx .t{font-size:14.5px;font-weight:700;color:var(--ink)}
+  .pm-tx .d{font-size:11.5px;color:var(--ink-3);margin-top:2px}
+  .pm-row .chev{color:var(--ink-3)}
+  .pay-end{text-align:center;font-size:11.5px;color:var(--ink-3);padding:22px 24px 0;line-height:1.5}
+</style>
+</head>
+<body>
+
+<div class="pagehead">
+  <h1>PAYG Upgrade — Transition Prototype</h1>
+  <p>Index → pick a version → Chat → Upgrade → Flexibility → Speed → Recharge plans → Summary → Payment.</p>
+</div>
+<div class="controls">
+  <button class="ctl" id="home">⌂ Index</button>
+  <button class="ctl" id="back">← Back</button>
+  <span class="stepchip" id="stepchip">Index</span>
+  <button class="ctl" id="restart">↻ Restart flow</button>
+</div>
+
+<div class="device">
+  <div class="viewport">
+
+    <!-- ===== INDEX ===== -->
+    <div class="screen on" id="scr-index">
+      <div class="pane idx">
+        <div class="statusbar"><span>4:35</span>
+          <span class="right"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span>50%</span></span>
+        </div>
+        <div class="idx-brand">व्योम · प्रोटोटाइप</div>
+        <h1>Migration design variations</h1>
+        <div class="idx-sub">Updated education pages for migration and plan page variations</div>
+        <div class="idx-cards">
+          <div class="vcard" data-version="A">
+            <div class="vcard-badge">A</div>
+            <div class="vcard-tx">
+              <div class="t">इनलाइन स्ट्राइक प्राइसिंग</div>
+              <div class="d">₹23 ₹20 — पुरानी कीमत कटी हुई + “कूपन लगा है” टैग</div>
+            </div>
+            <span class="ms">chevron_right</span>
+          </div>
+          <div class="vcard" data-version="B">
+            <div class="vcard-badge">B</div>
+            <div class="vcard-tx">
+              <div class="t">सेविंग्स बैनर प्राइसिंग</div>
+              <div class="d">कूपन बैनर + पुरानी कीमत, नई कीमत और हरी “बचत” चिप</div>
+            </div>
+            <span class="ms">chevron_right</span>
+          </div>
+          <div class="vcard" data-version="C">
+            <div class="vcard-badge">C</div>
+            <div class="vcard-tx">
+              <div class="t">ऑफर-कार्ड प्राइसिंग</div>
+              <div class="d">हर प्लान एक कार्ड — नीचे हरी “WLCM ऑफर” पट्टी</div>
+            </div>
+            <span class="ms">chevron_right</span>
+          </div>
+        </div>
+        <div class="idx-foot">तीनों वर्ज़न का फ्लो एक जैसा है — सिर्फ़ रिचार्ज प्लान पेज अलग है।</div>
+      </div>
+    </div>
+
+    <!-- ===== CHAT ===== -->
+    <div class="screen" id="scr-chat">
+      <div class="pane chat">
+        <div class="statusbar"><span>4:35</span>
+          <span class="right"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span>50%</span></span>
+        </div>
+        <header class="chat-top-bar">
+          <div class="chat-top-bar-left">
+            <div class="wiom-avatar">
+              <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="24" cy="24" r="20" fill="#D9008D"/>
+                <path d="M14 26 C 14 18, 22 18, 22 26 S 32 34, 36 22" stroke="#FFFFFF"
+                  stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              </svg>
+            </div>
+            <div class="chat-top-text">
+              <div class="chat-top-name">व्योम</div>
+              <div class="chat-top-status">ऑनलाइन</div>
+            </div>
+          </div>
+          <div class="chat-top-actions">
+            <button class="chat-icon-btn" aria-label="Call"><span class="ms outlined">call</span></button>
+            <button class="chat-icon-btn" aria-label="More"><span class="ms outlined">more_vert</span></button>
+          </div>
+        </header>
+        <div class="sticky-net">
+          <div class="net-card">
+            <div class="net-card-icon"><span class="ms outlined">home</span></div>
+            <div class="net-card-text">
+              <div class="net-card-heading">घर का नेट: रमेश</div>
+              <div class="net-card-status">
+                <span class="net-card-status-label">स्थिति:</span>
+                <span class="net-card-status-value">चालू है</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="chat-body">
+          <div class="msg-row bot" id="chatWait">
+            <div class="msg-wrap">
+              <div class="msg-tail"></div>
+              <div class="waiting-bubble"><div class="waiting-dots">
+                <span class="waiting-dot"></span><span class="waiting-dot"></span><span class="waiting-dot"></span>
+              </div></div>
+            </div>
+          </div>
+          <div class="msg-row bot hide" id="chatMsg">
+            <div class="msg-wrap">
+              <div class="msg-tail"></div>
+              <div class="msg-bubble has-cta-below">
+                <div class="msg-content">
+                  <div class="msg-text">आपके घर का नेट जल्द खत्म होने वाला है। अब नेट के लिए पूरे महीने का रिचार्ज ज़रूरी नहीं।</div>
+                  <div class="msg-text">अब अपनी <strong>ज़रूरत के हिसाब से</strong> दिन चुनें।</div>
+                  <div class="msg-time">10:15 AM</div>
+                </div>
+              </div>
+              <div class="msg-divider"></div>
+              <button class="msg-cta" data-go="upgrade"><span class="msg-cta-text">नए प्लान समझें</span></button>
+            </div>
+          </div>
+        </div>
+        <div class="chat-input">
+          <div class="input-field">यहाँ पूछें....</div>
+          <button class="send-btn" aria-label="Send"><span class="ms ms-20">send</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== UPGRADE ===== -->
+    <div class="screen" id="scr-upgrade">
+      <div class="pane upg">
+        <div class="statusbar"><span>4:35</span>
+          <span class="right"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span>50%</span></span>
+        </div>
+        <div class="prog"><span class="seg on"></span><span class="seg"></span><span class="seg"></span></div>
+        <div class="content">
+          <div class="brand">व्योम</div>
+          <h1>आपके घर का नेट<br/>अपग्रेड हो चुका है</h1>
+          <div class="sub">आगे बढ़ें और देखें — अब क्या नया है</div>
+          <div class="upviz">
+            <svg class="upring" viewBox="0 0 166 166">
+              <circle class="ring-track" cx="83" cy="83" r="75"/>
+              <circle class="ring-arc" cx="83" cy="83" r="75"
+                pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/>
+            </svg>
+            <span class="uspark u1"><span class="ms">auto_awesome</span></span>
+            <span class="uspark u2"><span class="ms">auto_awesome</span></span>
+            <span class="uspark u3"><span class="ms">auto_awesome</span></span>
+            <span class="uspark u4"><span class="ms">auto_awesome</span></span>
+            <div class="up-core"><span class="ms">upgrade</span></div>
+          </div>
+          <div class="updots"><i></i><i></i><i></i></div>
+          <div class="microline">कुछ बेहतर हुआ है</div>
+        </div>
+        <div class="ctabar"><button class="cta hint" data-go="flex">आगे</button></div>
+      </div>
+    </div>
+
+    <!-- ===== FLEXIBILITY ===== -->
+    <div class="screen" id="scr-flex">
+      <div class="pane upg">
+        <div class="statusbar"><span>4:35</span>
+          <span class="right"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span>50%</span></span>
+        </div>
+        <div class="prog"><span class="seg on"></span><span class="seg on"></span><span class="seg"></span></div>
+        <div class="content">
+          <div class="brand">व्योम</div>
+          <h1>अब आप ज़रूरत के हिसाब से<br/>दिन चुन सकते हैं</h1>
+          <div class="sub">जितने दिन नेट चाहिए, उतने दिन का रिचार्ज</div>
+          <div class="dscale">
+            <div class="dscale-track"></div>
+            <div class="dscale-nodes">
+              <div class="dnode"><div class="dnum">1</div><div class="ddot-wrap"><span class="ddot d1"></span></div></div>
+              <div class="dnode"><div class="dnum">2</div><div class="ddot-wrap"><span class="ddot d2"></span></div></div>
+              <div class="dnode"><div class="dnum">7</div><div class="ddot-wrap"><span class="ddot d3"></span></div></div>
+              <div class="dnode"><div class="dnum">14</div><div class="ddot-wrap"><span class="ddot d4"></span></div></div>
+              <div class="dnode"><div class="dnum">28</div><div class="ddot-wrap"><span class="ddot d5"></span></div></div>
+            </div>
+            <div class="dscale-ends"><span>कम दिन</span><span>ज़्यादा दिन</span></div>
+          </div>
+          <div class="microline">1 से 28 दिन तक — जो ज़रूरत, वो प्लान</div>
+        </div>
+        <div class="ctabar"><button class="cta hint" data-go="speed">आगे</button></div>
+      </div>
+    </div>
+
+    <!-- ===== SPEED ===== -->
+    <div class="screen" id="scr-speed">
+      <div class="pane upg">
+        <div class="statusbar"><span>4:35</span>
+          <span class="right"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span>50%</span></span>
+        </div>
+        <div class="prog"><span class="seg on"></span><span class="seg on"></span><span class="seg on"></span></div>
+        <div class="content">
+          <div class="brand">व्योम</div>
+          <h1>और रफ्तार भी<br/>अब दोगुनी हो गई</h1>
+          <div class="sub">पहले से तेज़ — हर काम अब और आसानी से</div>
+          <div class="gaugewrap">
+            <svg viewBox="0 0 236 150">
+              <path d="M22 134 A96 96 0 0 1 214 134" fill="none" stroke="#EEDCE9"
+                stroke-width="15" stroke-linecap="round"/>
+              <path class="gauge-arc" d="M22 134 A96 96 0 0 1 214 134" fill="none"
+                stroke="#D9008D" stroke-width="15" stroke-linecap="round"
+                pathLength="100" stroke-dasharray="100" stroke-dashoffset="50"/>
+            </svg>
+            <div class="gnum"><span class="v" id="spdNum">50</span><span class="u">MBPS</span></div>
+          </div>
+          <div class="spd-old"><s>पहले 50 mbps</s></div>
+          <div class="badge2x"><span class="ms">bolt</span>2× तेज़ रफ्तार</div>
+          <div class="microline"></div>
+        </div>
+        <div class="ctabar"><button class="cta hint" data-go="recharge">रिचार्ज के विकल्प देखें</button></div>
+      </div>
+    </div>
+
+    <!-- ===== RECHARGE PLANS (3 versions) ===== -->
+    <div class="screen" id="scr-recharge">
+      <div class="pane">
+        <div class="statusbar"><span>4:35</span>
+          <span class="right"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span>50%</span></span>
+        </div>
+        <div class="appbar">
+          <button class="ic" data-go="speed" aria-label="Back"><span class="ms">arrow_back</span></button>
+          <span class="ttl">नए रिचार्ज के विकल्प</span>
+          <span class="rt">
+            <button class="ic" aria-label="Help"><span class="ms outlined">support_agent</span></button>
+            <button class="ic" aria-label="Language"><span class="ms outlined">translate</span></button>
+          </span>
+        </div>
+        <div class="scrollarea">
+          <!-- Version A — inline strike -->
+          <div id="recharge-A">
+            <div class="pintro">अपनी ज़रूरत के हिसाब से एक प्लान चुनें</div>
+            <div class="prow" data-plan="1"><span class="radio"></span>
+              <div class="pinfo"><div class="pd">1 दिन <span>(24 घंटे)</span></div></div>
+              <div class="pprice"><div class="pline"><s>₹23</s><b>₹20</b></div>
+                <div class="ptag"><span class="ms">sell</span> कूपन लगा है</div></div></div>
+            <div class="prow" data-plan="2"><span class="radio"></span>
+              <div class="pinfo"><div class="pd">2 दिन <span>(48 घंटे)</span></div></div>
+              <div class="pprice"><div class="pline"><s>₹45</s><b>₹38</b></div>
+                <div class="ptag"><span class="ms">sell</span> कूपन लगा है</div></div></div>
+            <div class="prow" data-plan="7"><span class="radio"></span>
+              <div class="pinfo"><div class="pd">7 दिन <span>(1 हफ्ता)</span></div></div>
+              <div class="pprice"><div class="pline"><s>₹145</s><b>₹126</b></div>
+                <div class="ptag"><span class="ms">sell</span> कूपन लगा है</div></div></div>
+            <div class="prow" data-plan="14"><span class="radio"></span>
+              <div class="pinfo"><div class="pd">14 दिन <span>(2 हफ्ते)</span></div></div>
+              <div class="pprice"><div class="pline"><s>₹305</s><b>₹265</b></div>
+                <div class="ptag"><span class="ms">sell</span> कूपन लगा है</div></div></div>
+            <div class="prow" data-plan="28"><span class="radio"></span>
+              <div class="pinfo"><div class="pd">28 दिन <span>(4 हफ्ते)</span></div></div>
+              <div class="pprice"><div class="pline"><s>₹565</s><b>₹500</b></div>
+                <div class="ptag"><span class="ms">sell</span> कूपन लगा है</div></div></div>
+          </div>
+          <!-- Version B — savings banner (now with actual price) -->
+          <div id="recharge-B" style="display:none">
+            <div class="cpn-banner"><span class="ms">sell</span>
+              <div>WLCM कूपन लगा — आपके लिए कम कीमत</div></div>
+            <div class="pintro">अपनी ज़रूरत के हिसाब से एक प्लान चुनें</div>
+            <div class="prow" data-plan="1"><span class="radio"></span>
+              <div class="pinfo"><div class="pd">1 दिन <span>(24 घंटे)</span></div></div>
+              <div class="pprice"><div class="bprice"><s>₹23</s>₹20</div><div class="bsave">₹3 की बचत</div></div></div>
+            <div class="prow" data-plan="2"><span class="radio"></span>
+              <div class="pinfo"><div class="pd">2 दिन <span>(48 घंटे)</span></div></div>
+              <div class="pprice"><div class="bprice"><s>₹45</s>₹38</div><div class="bsave">₹7 की बचत</div></div></div>
+            <div class="prow" data-plan="7"><span class="radio"></span>
+              <div class="pinfo"><div class="pd">7 दिन <span>(1 हफ्ता)</span></div></div>
+              <div class="pprice"><div class="bprice"><s>₹145</s>₹126</div><div class="bsave">₹19 की बचत</div></div></div>
+            <div class="prow" data-plan="14"><span class="radio"></span>
+              <div class="pinfo"><div class="pd">14 दिन <span>(2 हफ्ते)</span></div></div>
+              <div class="pprice"><div class="bprice"><s>₹305</s>₹265</div><div class="bsave">₹40 की बचत</div></div></div>
+            <div class="prow" data-plan="28"><span class="radio"></span>
+              <div class="pinfo"><div class="pd">28 दिन <span>(4 हफ्ते)</span></div></div>
+              <div class="pprice"><div class="bprice"><s>₹565</s>₹500</div><div class="bsave">₹65 की बचत</div></div></div>
+          </div>
+          <!-- Version C — offer card (Figma "Case 17" structure) -->
+          <div id="recharge-C" style="display:none">
+            <div class="pintro">अपनी ज़रूरत के हिसाब से एक प्लान चुनें</div>
+            <div class="cmcard" data-plan="1">
+              <div class="cmtop"><span class="radio"></span>
+                <div class="pinfo"><div class="pd">1 दिन <span>(24 घंटे)</span></div></div>
+                <div class="cmprice"><s>₹23</s><b>₹20</b></div></div>
+              <div class="cmband"><span class="ms">sell</span><span class="ctxt">WLCM ऑफर — ₹3 की बचत</span></div>
+            </div>
+            <div class="cmcard" data-plan="2">
+              <div class="cmtop"><span class="radio"></span>
+                <div class="pinfo"><div class="pd">2 दिन <span>(48 घंटे)</span></div></div>
+                <div class="cmprice"><s>₹45</s><b>₹38</b></div></div>
+              <div class="cmband"><span class="ms">sell</span><span class="ctxt">WLCM ऑफर — ₹7 की बचत</span></div>
+            </div>
+            <div class="cmcard" data-plan="7">
+              <div class="cmtop"><span class="radio"></span>
+                <div class="pinfo"><div class="pd">7 दिन <span>(1 हफ्ता)</span></div></div>
+                <div class="cmprice"><s>₹145</s><b>₹126</b></div></div>
+              <div class="cmband"><span class="ms">sell</span><span class="ctxt">WLCM ऑफर — ₹19 की बचत</span></div>
+            </div>
+            <div class="cmcard" data-plan="14">
+              <div class="cmtop"><span class="radio"></span>
+                <div class="pinfo"><div class="pd">14 दिन <span>(2 हफ्ते)</span></div></div>
+                <div class="cmprice"><s>₹305</s><b>₹265</b></div></div>
+              <div class="cmband"><span class="ms">sell</span><span class="ctxt">WLCM ऑफर — ₹40 की बचत</span></div>
+            </div>
+            <div class="cmcard" data-plan="28">
+              <div class="cmtop"><span class="radio"></span>
+                <div class="pinfo"><div class="pd">28 दिन <span>(4 हफ्ते)</span></div></div>
+                <div class="cmprice"><s>₹565</s><b>₹500</b></div></div>
+              <div class="cmband"><span class="ms">sell</span><span class="ctxt">WLCM ऑफर — ₹65 की बचत</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="rbar"><button class="cta disabled" id="rcta" data-go="summary">प्लान चुनें</button></div>
+      </div>
+    </div>
+
+    <!-- ===== RECHARGE SUMMARY ===== -->
+    <div class="screen" id="scr-summary">
+      <div class="pane">
+        <div class="statusbar"><span>4:35</span>
+          <span class="right"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span>50%</span></span>
+        </div>
+        <div class="appbar">
+          <button class="ic" data-go="recharge" aria-label="Back"><span class="ms">arrow_back</span></button>
+          <span class="ttl">रिचार्ज का विवरण</span>
+        </div>
+        <div class="scrollarea">
+          <div class="sum-card">
+            <div class="sum-plan">
+              <div class="sp1 v-days">— का रिचार्ज</div>
+              <div class="sp2">वैधता: <span class="v-range">—</span> तक</div>
+            </div>
+            <div class="sum-line"><span class="lbl">प्लान की कीमत</span><span class="val v-orig">—</span></div>
+            <div class="sum-line"><span class="lbl">WLCM कूपन छूट</span><span class="val disc">− <span class="v-save">—</span></span></div>
+            <div class="sum-line total"><span class="lbl">कुल देय</span><span class="val v-final">—</span></div>
+          </div>
+          <div class="sum-note"><span class="ms">check_circle</span>
+            <span><span class="v-save">—</span> की बचत हुई — कूपन अपने आप लगा</span></div>
+        </div>
+        <div class="rbar"><button class="cta hint" data-go="payment">भुगतान करें (<span class="v-final">—</span>)</button></div>
+      </div>
+    </div>
+
+    <!-- ===== PAYMENT OPTIONS ===== -->
+    <div class="screen" id="scr-payment">
+      <div class="pane">
+        <div class="statusbar"><span>4:35</span>
+          <span class="right"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span>50%</span></span>
+        </div>
+        <div class="appbar">
+          <button class="ic" data-go="summary" aria-label="Back"><span class="ms">arrow_back</span></button>
+          <span class="ttl">भुगतान का तरीका</span>
+        </div>
+        <div class="scrollarea">
+          <div class="pay-h"><span class="v-final">—</span> का भुगतान करें</div>
+          <div class="pay-sub">अपना पसंदीदा तरीका चुनें</div>
+          <div class="pm-row">
+            <div class="pm-ic"><span class="ms">account_balance_wallet</span></div>
+            <div class="pm-tx"><div class="t">UPI</div><div class="d">Google Pay, PhonePe, Paytm</div></div>
+            <span class="ms chev">chevron_right</span>
+          </div>
+          <div class="pm-row">
+            <div class="pm-ic"><span class="ms">credit_card</span></div>
+            <div class="pm-tx"><div class="t">क्रेडिट / डेबिट कार्ड</div><div class="d">Visa, Mastercard, RuPay</div></div>
+            <span class="ms chev">chevron_right</span>
+          </div>
+          <div class="pm-row">
+            <div class="pm-ic"><span class="ms">account_balance</span></div>
+            <div class="pm-tx"><div class="t">नेट बैंकिंग</div><div class="d">सभी बड़े बैंक</div></div>
+            <span class="ms chev">chevron_right</span>
+          </div>
+          <div class="pay-end">तरीका चुनते ही भुगतान पूरा होगा — इस प्रोटोटाइप का फ्लो यहीं समाप्त।</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<div class="hinttext" id="hinttext">Choose Version A, B or C to start</div>
+
+<script>
+var PLANS={
+  '1':{label:'1 दिन',hours:'24 घंटे',days:1,o:23,f:20,s:3},
+  '2':{label:'2 दिन',hours:'48 घंटे',days:2,o:45,f:38,s:7},
+  '7':{label:'7 दिन',hours:'1 हफ्ता',days:7,o:145,f:126,s:19},
+  '14':{label:'14 दिन',hours:'2 हफ्ते',days:14,o:305,f:265,s:40},
+  '28':{label:'28 दिन',hours:'4 हफ्ते',days:28,o:565,f:500,s:65}
+};
+var MONTHS=['जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितंबर','अक्टूबर','नवंबर','दिसंबर'];
+function addDays(n){var d=new Date(2026,4,21);d.setDate(d.getDate()+n);return d.getDate()+' '+MONTHS[d.getMonth()];}
+
+var ORDER=['chat','upgrade','flex','speed','recharge','summary','payment'];
+var NAMES={chat:'Chat',upgrade:'Upgrade',flex:'Flexibility',speed:'Speed',
+  recharge:'Recharge plans',summary:'Recharge summary',payment:'Payment options'};
+var HINTS={index:'Choose Version A, B or C to start',
+  chat:'Tap “नए प्लान समझें”',upgrade:'“अपग्रेड हो चुका है” — tap “आगे”',
+  flex:'Duration scale — tap “आगे”',speed:'Speed 50 → 100 — tap the CTA',
+  recharge:'Pick a plan, then “आगे बढ़ें”',summary:'Recharge summary — tap “भुगतान करें”',
+  payment:'Choose a payment method — end of flow'};
+var state={version:'A',plan:null};
+var navStack=[],timers=[],rafId=null;
+function clearT(){timers.forEach(clearTimeout);timers=[];if(rafId){cancelAnimationFrame(rafId);rafId=null;}}
+
+function show(id,fromBack){
+  clearT();
+  if(!fromBack){var c=cur(); if(c!==id) navStack.push(c);}
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
+  document.getElementById('scr-'+id).classList.add('on');
+  if(id==='index'){
+    document.getElementById('stepchip').textContent='Index · Versions';
+  }else{
+    var idx=ORDER.indexOf(id);
+    document.getElementById('stepchip').textContent=(idx+1)+' / 7 · '+NAMES[id]+'  ·  Ver '+state.version;
+  }
+  document.getElementById('hinttext').textContent=HINTS[id]||'';
+  document.getElementById('back').disabled=navStack.length===0;
+  onShow(id);
+}
+function cur(){var o=document.querySelector('.screen.on');return o?o.id.replace('scr-',''):'index';}
+
+function onShow(id){
+  if(id==='chat') typeChat();
+  if(id==='speed') runSpeed();
+  if(id==='recharge'){
+    ['A','B','C'].forEach(function(v){
+      document.getElementById('recharge-'+v).style.display=state.version===v?'block':'none';
+    });
+  }
+  if(id==='summary'||id==='payment') fillPrices();
+}
+
+function typeChat(){
+  var w=document.getElementById('chatWait'), m=document.getElementById('chatMsg');
+  w.classList.remove('hide'); m.classList.add('hide');
+  timers.push(setTimeout(function(){ w.classList.add('hide'); m.classList.remove('hide'); },1300));
+}
+
+function runSpeed(){
+  var numEl=document.getElementById('spdNum');
+  var arc=document.querySelector('#scr-speed .gauge-arc');
+  if(rafId){cancelAnimationFrame(rafId);rafId=null;}
+  numEl.textContent='50'; arc.setAttribute('stroke-dashoffset','50');
+  var FROM=50,TO=100,DUR=1700,DELAY=420,start=null;
+  function ease(t){return 1-Math.pow(1-t,3);}
+  function frame(ts){
+    if(start===null)start=ts;
+    var el=ts-start-DELAY, t=el<=0?0:(el>=DUR?1:el/DUR);
+    var v=FROM+(TO-FROM)*ease(t);
+    numEl.textContent=String(Math.round(v));
+    arc.setAttribute('stroke-dashoffset',String(Math.max(3,100-v)));
+    if(t<1){rafId=requestAnimationFrame(frame);}
+    else{numEl.textContent='100';arc.setAttribute('stroke-dashoffset','3');rafId=null;}
+  }
+  rafId=requestAnimationFrame(frame);
+}
+
+function fillPrices(){
+  var p=PLANS[state.plan]; if(!p) return;
+  function setAll(s,v){document.querySelectorAll(s).forEach(function(e){e.textContent=v;});}
+  setAll('.v-final','₹'+p.f);
+  setAll('.v-orig','₹'+p.o);
+  setAll('.v-save','₹'+p.s);
+  setAll('.v-days',p.label+' का रिचार्ज');
+  setAll('.v-range',addDays(0)+' से '+addDays(p.days));
+}
+
+function clearSel(){
+  document.querySelectorAll('.prow, .cmcard').forEach(function(r){r.classList.remove('sel');});
+  var rc=document.getElementById('rcta');
+  rc.classList.add('disabled'); rc.classList.remove('hint'); rc.textContent='प्लान चुनें';
+}
+
+/* version launch */
+document.querySelectorAll('.vcard').forEach(function(card){
+  card.addEventListener('click',function(){
+    state.version=card.dataset.version; state.plan=null;
+    clearSel();
+    navStack=['index'];
+    show('chat');
+  });
+});
+
+/* plan selection (works for .prow and .cmcard) */
+document.querySelectorAll('.prow, .cmcard').forEach(function(row){
+  row.addEventListener('click',function(){
+    state.plan=row.dataset.plan;
+    document.querySelectorAll('.prow, .cmcard').forEach(function(r){r.classList.remove('sel');});
+    row.classList.add('sel');
+    fillPrices();
+    var rc=document.getElementById('rcta');
+    rc.classList.remove('disabled'); rc.classList.add('hint');
+    rc.textContent='आगे बढ़ें (₹'+PLANS[state.plan].f+')';
+  });
+});
+
+/* nav */
+document.querySelectorAll('[data-go]').forEach(function(el){
+  el.addEventListener('click',function(){
+    if(el.id==='rcta' && !state.plan) return;
+    show(el.dataset.go);
+  });
+});
+document.getElementById('back').addEventListener('click',function(){
+  if(navStack.length) show(navStack.pop(),true);
+});
+document.getElementById('home').addEventListener('click',function(){ navStack=[]; show('index',true); });
+document.getElementById('restart').addEventListener('click',function(){
+  state.plan=null; clearSel();
+  navStack=['index']; show('chat',true);
+});
+
+show('index',true);
+</script>
+</body>
+</html>

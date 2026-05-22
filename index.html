@@ -164,6 +164,11 @@
   .cta.disabled{background:#E2E0E8;cursor:default}
   .cta.hint{animation:hint 1.9s infinite}
   @keyframes hint{0%,100%{box-shadow:0 0 0 0 rgba(217,0,141,0)}50%{box-shadow:0 0 0 7px rgba(217,0,141,.16)}}
+  .taphint{padding:14px 16px 24px;display:flex;align-items:center;justify-content:center;gap:6px;
+    font-size:12px;font-weight:600;color:var(--ink-3);animation:tapPulse 1.9s ease-in-out infinite}
+  .taphint .ms{font-size:17px}
+  @keyframes tapPulse{0%,100%{opacity:.45}50%{opacity:1}}
+  #scr-flex,#scr-speed{cursor:pointer}
 
   .upviz{position:relative;width:166px;height:166px;margin-top:30px;display:flex;align-items:center;justify-content:center}
   .upring{position:absolute;inset:0}
@@ -229,8 +234,8 @@
   .coupon-t1{font-size:14px;font-weight:800;color:var(--ink)}
   .coupon-t2{font-size:11px;color:var(--ink-2);margin-top:1px}
   .coupon-stub{flex:0 0 auto;border-left:1.5px dashed var(--magenta);
-    display:flex;align-items:center;padding:0 13px;
-    font-size:11.5px;font-weight:700;color:var(--magenta);background:rgba(255,255,255,.45)}
+    display:flex;align-items:center;padding:0 12px;white-space:nowrap;
+    font-size:11px;font-weight:700;color:var(--magenta);background:rgba(255,255,255,.45)}
   #scr-coupon.on .coupon{animation:cpnIn .5s cubic-bezier(.3,1.5,.4,1) backwards}
   #scr-coupon.on .coupon:nth-child(1){animation-delay:.15s}
   #scr-coupon.on .coupon:nth-child(2){animation-delay:.28s}
@@ -329,7 +334,7 @@
 
 <div class="pagehead">
   <h1>PAYG Upgrade — Transition Prototype</h1>
-  <p>Index → pick a version → Chat → Upgrade → Flexibility → Speed → Recharge plans → Summary → Payment.</p>
+  <p>Index → version → Chat → Flexibility → Net upgrade → Coupons → Recharge plans → Summary → Payment.</p>
 </div>
 <div class="controls">
   <button class="ctl" id="home">⌂ Index</button>
@@ -437,7 +442,7 @@
                 </div>
               </div>
               <div class="msg-divider"></div>
-              <button class="msg-cta" data-go="upgrade"><span class="msg-cta-text">देखें क्या अपग्रेड हुआ</span></button>
+              <button class="msg-cta" data-go="flex"><span class="msg-cta-text">देखें क्या अपग्रेड हुआ</span></button>
             </div>
           </div>
         </div>
@@ -448,43 +453,13 @@
       </div>
     </div>
 
-    <!-- ===== UPGRADE ===== -->
-    <div class="screen" id="scr-upgrade">
+    <!-- ===== FLEXIBILITY (education starts here) ===== -->
+    <div class="screen" id="scr-flex" data-go="speed">
       <div class="pane upg">
         <div class="statusbar"><span>4:35</span>
           <span class="right"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span>50%</span></span>
         </div>
-        <div class="prog"><span class="seg on"></span><span class="seg"></span><span class="seg"></span><span class="seg"></span></div>
-        <div class="content">
-          <div class="brand">व्योम</div>
-          <h1>आपके घर का नेट<br/>अपग्रेड हो चुका है</h1>
-          <div class="sub">आगे बढ़ें और देखें — अब क्या नया है</div>
-          <div class="upviz">
-            <svg class="upring" viewBox="0 0 166 166">
-              <circle class="ring-track" cx="83" cy="83" r="75"/>
-              <circle class="ring-arc" cx="83" cy="83" r="75"
-                pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/>
-            </svg>
-            <span class="uspark u1"><span class="ms">auto_awesome</span></span>
-            <span class="uspark u2"><span class="ms">auto_awesome</span></span>
-            <span class="uspark u3"><span class="ms">auto_awesome</span></span>
-            <span class="uspark u4"><span class="ms">auto_awesome</span></span>
-            <div class="up-core"><span class="ms">upgrade</span></div>
-          </div>
-          <div class="updots"><i></i><i></i><i></i></div>
-          <div class="microline">कुछ बेहतर हुआ है</div>
-        </div>
-        <div class="ctabar"><button class="cta hint" data-go="flex">आगे</button></div>
-      </div>
-    </div>
-
-    <!-- ===== FLEXIBILITY ===== -->
-    <div class="screen" id="scr-flex">
-      <div class="pane upg">
-        <div class="statusbar"><span>4:35</span>
-          <span class="right"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span>50%</span></span>
-        </div>
-        <div class="prog"><span class="seg on"></span><span class="seg on"></span><span class="seg"></span><span class="seg"></span></div>
+        <div class="prog"><span class="seg on"></span><span class="seg"></span><span class="seg"></span></div>
         <div class="content">
           <div class="brand">व्योम</div>
           <h1>अब आप ज़रूरत के हिसाब से<br/>दिन चुन सकते हैं</h1>
@@ -500,21 +475,21 @@
           </div>
           <div class="microline">1 से 84 दिन तक — जो ज़रूरत, वो प्लान</div>
         </div>
-        <div class="ctabar"><button class="cta hint" data-go="speed">आगे</button></div>
+        <div class="taphint"><span class="ms">touch_app</span>आगे बढ़ने के लिए टैप करें</div>
       </div>
     </div>
 
     <!-- ===== SPEED ===== -->
-    <div class="screen" id="scr-speed">
+    <div class="screen" id="scr-speed" data-go="coupon">
       <div class="pane upg">
         <div class="statusbar"><span>4:35</span>
           <span class="right"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span>50%</span></span>
         </div>
-        <div class="prog"><span class="seg on"></span><span class="seg on"></span><span class="seg on"></span><span class="seg"></span></div>
+        <div class="prog"><span class="seg on"></span><span class="seg on"></span><span class="seg"></span></div>
         <div class="content">
           <div class="brand">व्योम</div>
-          <h1>और रफ्तार भी<br/>अब दोगुनी हो गई</h1>
-          <div class="sub">पहले से तेज़ — हर काम अब और आसानी से</div>
+          <h1>आपके घर का नेट<br/>अपग्रेड हो चुका है</h1>
+          <div class="sub">अब रफ्तार भी दोगुनी — 50 की जगह 100 mbps</div>
           <div class="gaugewrap">
             <svg viewBox="0 0 236 150">
               <path d="M22 134 A96 96 0 0 1 214 134" fill="none" stroke="#EEDCE9"
@@ -529,7 +504,7 @@
           <div class="badge2x"><span class="ms">bolt</span>2× तेज़ रफ्तार</div>
           <div class="microline"></div>
         </div>
-        <div class="ctabar"><button class="cta hint" data-go="coupon">आगे</button></div>
+        <div class="taphint"><span class="ms">touch_app</span>आगे बढ़ने के लिए टैप करें</div>
       </div>
     </div>
 
@@ -539,7 +514,7 @@
         <div class="statusbar"><span>4:35</span>
           <span class="right"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span>50%</span></span>
         </div>
-        <div class="prog"><span class="seg on"></span><span class="seg on"></span><span class="seg on"></span><span class="seg on"></span></div>
+        <div class="prog"><span class="seg on"></span><span class="seg on"></span><span class="seg on"></span></div>
         <div class="content">
           <div class="brand">व्योम</div>
           <h1>आपको मिले हैं<br/>3 WLCM कूपन</h1>
@@ -550,21 +525,21 @@
                 <div class="coupon-ic"><span class="ms">sell</span></div>
                 <div><div class="coupon-t1">WLCM कूपन</div><div class="coupon-t2">हर रिचार्ज पर बचत</div></div>
               </div>
-              <div class="coupon-stub">महीना 1</div>
+              <div class="coupon-stub">पहला कूपन</div>
             </div>
             <div class="coupon">
               <div class="coupon-main">
                 <div class="coupon-ic"><span class="ms">sell</span></div>
                 <div><div class="coupon-t1">WLCM कूपन</div><div class="coupon-t2">हर रिचार्ज पर बचत</div></div>
               </div>
-              <div class="coupon-stub">महीना 2</div>
+              <div class="coupon-stub">दूसरा कूपन</div>
             </div>
             <div class="coupon">
               <div class="coupon-main">
                 <div class="coupon-ic"><span class="ms">sell</span></div>
                 <div><div class="coupon-t1">WLCM कूपन</div><div class="coupon-t2">हर रिचार्ज पर बचत</div></div>
               </div>
-              <div class="coupon-stub">महीना 3</div>
+              <div class="coupon-stub">तीसरा कूपन</div>
             </div>
           </div>
           <div class="microline">जब चाहें, इन कूपन का इस्तेमाल करें</div>
@@ -754,12 +729,12 @@ var PLANS={
 var MONTHS=['जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितंबर','अक्टूबर','नवंबर','दिसंबर'];
 function addDays(n){var d=new Date(2026,4,21);d.setDate(d.getDate()+n);return d.getDate()+' '+MONTHS[d.getMonth()];}
 
-var ORDER=['chat','upgrade','flex','speed','coupon','recharge','summary','payment'];
-var NAMES={chat:'Chat',upgrade:'Upgrade',flex:'Flexibility',speed:'Speed',coupon:'Coupons',
+var ORDER=['chat','flex','speed','coupon','recharge','summary','payment'];
+var NAMES={chat:'Chat',flex:'Flexibility',speed:'Net upgraded',coupon:'Coupons',
   recharge:'Recharge plans',summary:'Recharge summary',payment:'Payment options'};
 var HINTS={index:'Choose Version A, B or C to start',
-  chat:'Tap “देखें क्या अपग्रेड हुआ”',upgrade:'“अपग्रेड हो चुका है” — tap “आगे”',
-  flex:'Day options — tap “आगे”',speed:'Speed 50 → 100 — tap “आगे”',
+  chat:'Tap “देखें क्या अपग्रेड हुआ”',
+  flex:'Day options — tap anywhere to continue',speed:'Net upgraded + 2× speed — tap anywhere',
   coupon:'3 coupons for 3 months — tap the CTA',
   recharge:'Pick a plan, then “आगे बढ़ें”',summary:'Recharge summary — tap “भुगतान करें”',
   payment:'Choose a payment method — end of flow'};
@@ -776,7 +751,7 @@ function show(id,fromBack){
     document.getElementById('stepchip').textContent='Index · Versions';
   }else{
     var idx=ORDER.indexOf(id);
-    document.getElementById('stepchip').textContent=(idx+1)+' / 8 · '+NAMES[id]+'  ·  Ver '+state.version;
+    document.getElementById('stepchip').textContent=(idx+1)+' / 7 · '+NAMES[id]+'  ·  Ver '+state.version;
   }
   document.getElementById('hinttext').textContent=HINTS[id]||'';
   document.getElementById('back').disabled=navStack.length===0;

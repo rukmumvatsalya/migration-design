@@ -218,6 +218,26 @@
   .badge2x .ms{font-size:16px}
   #scr-speed.on .badge2x{animation:fadeUp .5s 1.9s backwards}
 
+  /* coupon screen */
+  .coupons{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px;margin-top:24px}
+  .coupon{display:flex;align-items:stretch;background:var(--magenta-tint);
+    border:1.5px solid var(--magenta-soft);border-radius:12px;overflow:hidden}
+  .coupon-main{flex:1;display:flex;align-items:center;gap:11px;padding:11px 13px;min-width:0}
+  .coupon-ic{width:38px;height:38px;border-radius:50%;background:#fff;color:var(--magenta);
+    display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .coupon-ic .ms{font-size:20px}
+  .coupon-t1{font-size:14px;font-weight:800;color:var(--ink)}
+  .coupon-t2{font-size:11px;color:var(--ink-2);margin-top:1px}
+  .coupon-stub{flex:0 0 auto;border-left:1.5px dashed var(--magenta);
+    display:flex;align-items:center;padding:0 13px;
+    font-size:11.5px;font-weight:700;color:var(--magenta);background:rgba(255,255,255,.45)}
+  #scr-coupon.on .coupon{animation:cpnIn .5s cubic-bezier(.3,1.5,.4,1) backwards}
+  #scr-coupon.on .coupon:nth-child(1){animation-delay:.15s}
+  #scr-coupon.on .coupon:nth-child(2){animation-delay:.28s}
+  #scr-coupon.on .coupon:nth-child(3){animation-delay:.41s}
+  @keyframes cpnIn{from{opacity:0;transform:translateY(14px) scale(.9)}to{opacity:1;transform:none}}
+  #scr-coupon.on .microline{animation:fadeUp .5s .7s backwards}
+
   /* ============ app screens ============ */
   .appbar{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:10px 8px;
     background:#fff;border-bottom:1px solid var(--line)}
@@ -434,7 +454,7 @@
         <div class="statusbar"><span>4:35</span>
           <span class="right"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span>50%</span></span>
         </div>
-        <div class="prog"><span class="seg on"></span><span class="seg"></span><span class="seg"></span></div>
+        <div class="prog"><span class="seg on"></span><span class="seg"></span><span class="seg"></span><span class="seg"></span></div>
         <div class="content">
           <div class="brand">व्योम</div>
           <h1>आपके घर का नेट<br/>अपग्रेड हो चुका है</h1>
@@ -464,7 +484,7 @@
         <div class="statusbar"><span>4:35</span>
           <span class="right"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span>50%</span></span>
         </div>
-        <div class="prog"><span class="seg on"></span><span class="seg on"></span><span class="seg"></span></div>
+        <div class="prog"><span class="seg on"></span><span class="seg on"></span><span class="seg"></span><span class="seg"></span></div>
         <div class="content">
           <div class="brand">व्योम</div>
           <h1>अब आप ज़रूरत के हिसाब से<br/>दिन चुन सकते हैं</h1>
@@ -490,7 +510,7 @@
         <div class="statusbar"><span>4:35</span>
           <span class="right"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span>50%</span></span>
         </div>
-        <div class="prog"><span class="seg on"></span><span class="seg on"></span><span class="seg on"></span></div>
+        <div class="prog"><span class="seg on"></span><span class="seg on"></span><span class="seg on"></span><span class="seg"></span></div>
         <div class="content">
           <div class="brand">व्योम</div>
           <h1>और रफ्तार भी<br/>अब दोगुनी हो गई</h1>
@@ -508,6 +528,46 @@
           <div class="spd-old"><s>पहले 50 mbps</s></div>
           <div class="badge2x"><span class="ms">bolt</span>2× तेज़ रफ्तार</div>
           <div class="microline"></div>
+        </div>
+        <div class="ctabar"><button class="cta hint" data-go="coupon">आगे</button></div>
+      </div>
+    </div>
+
+    <!-- ===== COUPONS (post speed-upgrade) ===== -->
+    <div class="screen" id="scr-coupon">
+      <div class="pane upg">
+        <div class="statusbar"><span>4:35</span>
+          <span class="right"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span>50%</span></span>
+        </div>
+        <div class="prog"><span class="seg on"></span><span class="seg on"></span><span class="seg on"></span><span class="seg on"></span></div>
+        <div class="content">
+          <div class="brand">व्योम</div>
+          <h1>आपको मिले हैं<br/>3 WLCM कूपन</h1>
+          <div class="sub">अगले 3 महीने तक — हर रिचार्ज पर कम कीमत</div>
+          <div class="coupons">
+            <div class="coupon">
+              <div class="coupon-main">
+                <div class="coupon-ic"><span class="ms">sell</span></div>
+                <div><div class="coupon-t1">WLCM कूपन</div><div class="coupon-t2">हर रिचार्ज पर बचत</div></div>
+              </div>
+              <div class="coupon-stub">महीना 1</div>
+            </div>
+            <div class="coupon">
+              <div class="coupon-main">
+                <div class="coupon-ic"><span class="ms">sell</span></div>
+                <div><div class="coupon-t1">WLCM कूपन</div><div class="coupon-t2">हर रिचार्ज पर बचत</div></div>
+              </div>
+              <div class="coupon-stub">महीना 2</div>
+            </div>
+            <div class="coupon">
+              <div class="coupon-main">
+                <div class="coupon-ic"><span class="ms">sell</span></div>
+                <div><div class="coupon-t1">WLCM कूपन</div><div class="coupon-t2">हर रिचार्ज पर बचत</div></div>
+              </div>
+              <div class="coupon-stub">महीना 3</div>
+            </div>
+          </div>
+          <div class="microline">जब चाहें, इन कूपन का इस्तेमाल करें</div>
         </div>
         <div class="ctabar"><button class="cta hint" data-go="recharge">रिचार्ज के विकल्प देखें</button></div>
       </div>
@@ -694,12 +754,13 @@ var PLANS={
 var MONTHS=['जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितंबर','अक्टूबर','नवंबर','दिसंबर'];
 function addDays(n){var d=new Date(2026,4,21);d.setDate(d.getDate()+n);return d.getDate()+' '+MONTHS[d.getMonth()];}
 
-var ORDER=['chat','upgrade','flex','speed','recharge','summary','payment'];
-var NAMES={chat:'Chat',upgrade:'Upgrade',flex:'Flexibility',speed:'Speed',
+var ORDER=['chat','upgrade','flex','speed','coupon','recharge','summary','payment'];
+var NAMES={chat:'Chat',upgrade:'Upgrade',flex:'Flexibility',speed:'Speed',coupon:'Coupons',
   recharge:'Recharge plans',summary:'Recharge summary',payment:'Payment options'};
 var HINTS={index:'Choose Version A, B or C to start',
   chat:'Tap “देखें क्या अपग्रेड हुआ”',upgrade:'“अपग्रेड हो चुका है” — tap “आगे”',
-  flex:'Duration scale — tap “आगे”',speed:'Speed 50 → 100 — tap the CTA',
+  flex:'Day options — tap “आगे”',speed:'Speed 50 → 100 — tap “आगे”',
+  coupon:'3 coupons for 3 months — tap the CTA',
   recharge:'Pick a plan, then “आगे बढ़ें”',summary:'Recharge summary — tap “भुगतान करें”',
   payment:'Choose a payment method — end of flow'};
 var state={version:'A',plan:null};
@@ -715,7 +776,7 @@ function show(id,fromBack){
     document.getElementById('stepchip').textContent='Index · Versions';
   }else{
     var idx=ORDER.indexOf(id);
-    document.getElementById('stepchip').textContent=(idx+1)+' / 7 · '+NAMES[id]+'  ·  Ver '+state.version;
+    document.getElementById('stepchip').textContent=(idx+1)+' / 8 · '+NAMES[id]+'  ·  Ver '+state.version;
   }
   document.getElementById('hinttext').textContent=HINTS[id]||'';
   document.getElementById('back').disabled=navStack.length===0;
